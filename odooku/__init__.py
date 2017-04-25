@@ -1,6 +1,6 @@
 import odooku.patches
-from odooku.projects import load_projects
-load_projects()
+from odooku.packages import init_packages
+init_packages()
 
 import gevent.monkey
 gevent.monkey.patch_all()

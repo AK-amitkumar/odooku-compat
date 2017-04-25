@@ -1,8 +1,10 @@
 import click
 import urlparse
+import importlib
 
 from odooku.params import params
 from odooku.cli.helpers import prefix_envvar, resolve_addons
+from odooku.packages import cli_commands as extra_cli_commands
 
 import logging
 
@@ -164,12 +166,16 @@ def main(ctx, database_url, database_maxconn, redis_url, redis_maxconn,
     })
 
 
-from . import commands
-for name in dir(commands):
-    member = getattr(commands, name)
-    if isinstance(member, click.BaseCommand):
-        main.add_command(member)
 
+from . import commands
+cli_commands = [
+    getattr(commands, name)
+    for name in dir(commands)
+    if isinstance(getattr(commands, name), click.BaseCommand)
+]
+
+for command in (cli_commands + list(extra_cli_commands)):
+    main.add_command(command)
 
 def entrypoint():
     main(obj={})
