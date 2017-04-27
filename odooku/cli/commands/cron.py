@@ -1,6 +1,6 @@
 import click
 
-from odooku.cli.helpers import prefix_envvar
+from odooku.utils.env import prefix_envvar
 
 
 __all__ = [
@@ -27,7 +27,7 @@ def cron(ctx, interval, once):
         ctx.obj['config']
     )
 
-    from odooku.cron import CronRunner
+    from odooku.services.cron import CronRunner
 
     cron_runner = CronRunner()
     if once:

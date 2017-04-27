@@ -8,22 +8,16 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 from werkzeug.local import Local
 
+from odooku.backends.base import BaseBackend
+
 
 _logger = logging.getLogger(__name__)
 
 
-S3_CACHE_TIME = 3600*24*30
 
+class S3Backend(BaseBackend):
 
-class S3Error(Exception):
-    pass
-
-
-class S3NoSuchKey(S3Error):
-    pass
-
-
-class S3Pool(object):
+    cache_time = 3600*24*30
 
     def __init__(self, bucket, aws_access_key_id=None,
             aws_region=None, aws_secret_access_key=None,
@@ -39,7 +33,7 @@ class S3Pool(object):
         self._signature_version = signature_version
         self._custom_domain = custom_domain
 
-    def check(self):
+    def test_backend(self):
         # Wont work for fake-s3
         '''
         try:
@@ -49,7 +43,7 @@ class S3Pool(object):
             _logger.warning("S3 (%s) head", self.bucket, exc_info=True)
             return False
         '''
-        return True
+        return NotImplemented
 
     def get_url(self, *parts):
         if self._custom_domain:
@@ -77,23 +71,3 @@ class S3Pool(object):
             )
 
         return self._local.client
-
-
-pool = None
-
-def configure(bucket=None, **options):
-
-    global pool
-    if bucket:
-        _pool = S3Pool(
-            bucket,
-            **options
-        )
-
-        if _pool.check():
-            pool = _pool
-
-    if pool:
-        _logger.info("S3 enabled")
-    else:
-        _logger.warning("S3 disabled")

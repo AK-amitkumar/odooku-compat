@@ -18,7 +18,7 @@ IGNORE_EXCEPTIONS = (
 
 
 class WebRequestMixin(object):
-    
+
     def _handle_exception(self, exception):
         if not isinstance(exception, IGNORE_EXCEPTIONS):
             _logger.exception("Exception caught", exc_info=True)

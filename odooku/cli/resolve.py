@@ -1,7 +1,9 @@
 import click
 import os.path
 import odooku
-from odooku.packages import addon_paths as extra_addons
+
+from odooku.params import params
+
 
 DEFAULT_ADDONS = [
     os.path.join(os.path.dirname(odooku.__file__), 'addons')
@@ -9,8 +11,9 @@ DEFAULT_ADDONS = [
 
 def resolve_addons(ctx, param, value):
     addons = value.split(',')
-    addons = list(set(addons) | set(DEFAULT_ADDONS) | set(extra_addons))
+    addons = list(set(addons) | set(DEFAULT_ADDONS) | set(params.addon_paths))
     return ','.join(addons)
+
 
 def resolve_db_name(ctx, param, value):
     config = (
@@ -31,7 +34,3 @@ def resolve_db_name(ctx, param, value):
     raise click.BadParameter(
         "no db name given."
     )
-
-
-def prefix_envvar(envvar):
-    return 'ODOOKU_%s' % envvar

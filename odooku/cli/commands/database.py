@@ -4,7 +4,7 @@ import sys
 import os
 from contextlib import closing
 
-from odooku.cli.helpers import resolve_db_name
+from odooku.cli.resolve import resolve_db_name
 
 
 __all__ = [
@@ -106,9 +106,11 @@ def dump(ctx, db_name, s3_file):
         ctx.obj['config']
     )
 
-    from odooku.s3 import pool as s3_pool
+    from odooku.backends import get_backend
     from odoo.api import Environment
     from odoo.service.db import dump_db
+
+    s3_backend = get_backend('s3')
 
     with tempfile.TemporaryFile() as t:
         with Environment.manage():
@@ -116,7 +118,7 @@ def dump(ctx, db_name, s3_file):
 
         t.seek(0)
         if s3_file:
-            s3_pool.client.upload_fileobj(t, s3_pool.bucket, s3_file)
+            s3_backend.client.upload_fileobj(t, s3_backend.bucket, s3_file)
         else:
             # Pipe to stdout
             while True:
@@ -147,13 +149,13 @@ def restore(ctx, db_name, copy, s3_file):
     if update:
         config['update']['all'] = 1
 
-    from odooku.s3 import pool as s3_pool
+    from odooku.backends import get_backend
     from odoo.api import Environment
     from odoo.service.db import restore_db
 
     with tempfile.NamedTemporaryFile(delete=False) as t:
         if s3_file:
-            s3_pool.client.download_fileobj(s3_pool.bucket, s3_file, t)
+            s3_backend.client.download_fileobj(s3_backend.bucket, s3_file, t)
         else:
             # Read from stdin
             while True:

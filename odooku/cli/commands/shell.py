@@ -1,7 +1,7 @@
 import click
 import bpython
 
-from odooku.cli.helpers import resolve_db_name
+from odooku.cli.resolve import resolve_db_name
 
 
 __all__ = [

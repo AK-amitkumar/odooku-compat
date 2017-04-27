@@ -5,7 +5,7 @@ import gevent
 
 from werkzeug._reloader import run_with_reloader
 
-from odooku.cli.helpers import prefix_envvar
+from odooku.utils.env import prefix_envvar
 
 try:
     from newrelic import agent as newrelic_agent
@@ -87,14 +87,14 @@ def wsgi(ctx, port, timeout, cdn, proxy_mode, admin_password,
     config['workers'] = 2
     config['dev_mode'] = ['all']
     config['admin_passwd'] = admin_password
-    config['proxy_mode'] = proxy_mode
     config['dbfilter'] = db_filter
 
     if ws:
-        from odooku.websocket import WebSocketServer as Server
+        from odooku.services.websocket import WebSocketServer as Server
     else:
-        from odooku.wsgi import WSGIServer as Server
-    from odooku.cron import CronRunner
+        from odooku.services.wsgi import WSGIServer as Server
+    from odooku.services.wsgi import WSGIApplicationRulesWrapper
+    from odooku.services.cron import CronRunner
 
     # Initialize newrelic_agent
     global newrelic_agent
@@ -112,6 +112,9 @@ def wsgi(ctx, port, timeout, cdn, proxy_mode, admin_password,
     params.CDN_ENABLED = cdn
     params.WS_ENABLED = ws
 
+    # Load wsgi rules
+    rules = WSGIApplicationRulesWrapper.load()
+
     def serve():
         max_accept = config['db_maxconn']
         if cron:
@@ -122,6 +125,8 @@ def wsgi(ctx, port, timeout, cdn, proxy_mode, admin_password,
         server = Server(
             port,
             max_accept=max_accept,
+            proxy_mode=proxy_mode,
+            rules=rules,
             newrelic_agent=newrelic_agent,
             timeout=timeout
         )

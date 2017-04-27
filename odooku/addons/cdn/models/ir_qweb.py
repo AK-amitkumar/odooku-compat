@@ -7,10 +7,13 @@ from odoo import models, tools, SUPERUSER_ID
 from odoo.http import request
 from odoo.addons.base.ir.ir_qweb.assetsbundle import AssetsBundle
 
-from odooku.s3 import pool as s3_pool
+from odooku.backends import get_backend
 from odooku.params import params
 
 CDN_ENABLED = getattr(params, 'CDN_ENABLED', False)
+
+
+s3_backend = get_backend('s3')
 
 
 class IrQWeb(models.AbstractModel):
@@ -31,10 +34,10 @@ class IrQWeb(models.AbstractModel):
             attachments = IrAttachment.search([('url', '=like', url)])
             if attachments:
                 # /filestore/<dbname/<attachment>
-                url = s3_pool.get_url('filestore', cr.dbname, attachments[0].store_fname)
+                url = s3_backend.get_url('filestore', cr.dbname, attachments[0].store_fname)
         elif len(parts) > 3 and parts[2] == 'static':
             # /<module>/static
-            url = s3_pool.get_url(url[1:])
+            url = s3_backend.get_url(url[1:])
 
         return url
 
@@ -44,7 +47,7 @@ class IrQWeb(models.AbstractModel):
     def _wrap_cdn_build_attributes(self, el, items, options):
         if (options.get('rendering_bundle')
                 or not CDN_ENABLED
-                or not s3_pool
+                or not s3_backend
                 or el.tag not in self.CDN_TRIGGERS):
             # Shortcircuit
             return items
@@ -84,7 +87,7 @@ class IrQWeb(models.AbstractModel):
         atts = super(IrQWeb, self)._get_dynamic_att(tagName, atts, options, values)
         if (options.get('rendering_bundle')
                 or not CDN_ENABLED
-                or not s3_pool
+                or not s3_backend
                 or tagName not in self.CDN_TRIGGERS):
             # Shortcircuit
             return atts
@@ -109,6 +112,6 @@ class IrQWeb(models.AbstractModel):
         asset = AssetsBundle(xmlid, files, remains, env=self.env)
         url_for = (values or {}).get('url_for', lambda url: url)
         cdn_url_for = url_for
-        if CDN_ENABLED and s3_pool:
+        if CDN_ENABLED and s3_backend:
             cdn_url_for = lambda url: self._cdn_url(url_for(url))
         return asset.to_html(css=css, js=js, debug=debug, async=async, url_for=cdn_url_for)

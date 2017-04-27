@@ -3,8 +3,8 @@ import urlparse
 import importlib
 
 from odooku.params import params
-from odooku.cli.helpers import prefix_envvar, resolve_addons
-from odooku.packages import cli_commands as extra_cli_commands
+from odooku.utils.env import prefix_envvar
+from odooku.cli.resolve import resolve_addons
 
 import logging
 
@@ -106,10 +106,12 @@ def main(ctx, database_url, database_maxconn, redis_url, redis_maxconn,
     # Setup logger first, then import further modules
     import odooku.logger
     odooku.logger.setup(debug=debug, statsd_host=statsd_host)
-    from odooku import redis, s3
+    from odooku.backends import register_backend
+    from odooku.backends.s3 import S3Backend
+    from odooku.backends.redis import RedisBackend
 
     # Setup S3
-    s3.configure(
+    register_backend('s3', S3Backend(
         bucket=s3_bucket,
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
@@ -117,17 +119,17 @@ def main(ctx, database_url, database_maxconn, redis_url, redis_maxconn,
         endpoint_url=s3_endpoint_url,
         custom_domain=s3_custom_domain,
         addressing_style=s3_addressing_style,
-    )
+    ))
 
     # Setup Redis
     redis_url = urlparse.urlparse(redis_url) if redis_url else None
-    redis.configure(
+    register_backend('redis', RedisBackend(
         host=redis_url.hostname if redis_url else None,
         port=redis_url.port if redis_url else None,
         password=redis_url.password if redis_url else None,
         db_number=redis_url.path[1:] if redis_url and redis_url.path else None,
         maxconn=redis_maxconn
-    )
+    ))
 
     # Setup Odoo
     import odoo
@@ -174,7 +176,7 @@ cli_commands = [
     if isinstance(getattr(commands, name), click.BaseCommand)
 ]
 
-for command in (cli_commands + list(extra_cli_commands)):
+for command in (cli_commands + list(params.cli_commands)):
     main.add_command(command)
 
 def entrypoint():
