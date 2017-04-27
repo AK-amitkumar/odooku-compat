@@ -37,15 +37,17 @@ class patch_root(SoftPatch):
     def apply_patch():
 
         from odooku.patch.helpers import patch_class
-        from odooku import redis
-        from odooku.session import RedisSessionStore
+        from odooku.backends import get_backend
+        from odooku.backends.redis import RedisSessionStore
+
+        redis = get_backend('redis')
 
         @patch_class(globals()['Root'])
         class Root(object):
 
             @lazy_property
             def session_store(self):
-                if redis.pool:
+                if redis:
                     _logger.info("HTTP Sessions stored in redis")
                     return RedisSessionStore(session_class=OpenERPSession)
                 else:
@@ -93,7 +95,7 @@ class patch_session(SoftPatch):
     def apply_patch():
 
         from odooku.patch.helpers import patch_class
-        from odooku.session import RedisSessionStore
+        from odooku.backends.redis import RedisSessionStore
 
         @patch_class(globals()['OpenERPSession'])
         class OpenERPSession(object):

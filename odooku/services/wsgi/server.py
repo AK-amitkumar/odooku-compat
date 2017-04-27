@@ -10,8 +10,6 @@ import logging
 import greenlet
 import gevent
 
-from .application import WSGIApplicationWrapper
-
 
 _logger = logging.getLogger(__name__)
 
