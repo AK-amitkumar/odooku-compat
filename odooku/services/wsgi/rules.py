@@ -2,10 +2,13 @@ import os.path
 import json
 import re
 from urlparse import urlparse, urlunparse
-
+import logging
 
 from werkzeug.wsgi import get_current_url
 from werkzeug.utils import redirect
+
+
+_logger = logging.getLogger(__name__)
 
 
 class BadMatchPattern(Exception):
@@ -45,6 +48,7 @@ class Rule(object):
 
     def match(self, environ):
         url = get_current_url(environ)
+        _logger.info("matching %s", url)
         return bool(self._match_url(url))
 
     def execute(self, environ, start_response):
@@ -53,6 +57,7 @@ class Rule(object):
             groups = self._match_url(url).groups()
             parts = urlparse(url)
             new_parts = urlparse(self._redirect.format(*groups))
+            _logger.info("redirect to %s", urlunparse(new_parts[:2] + parts[2:]))
             response = redirect(urlunparse(new_parts[:2] + parts[2:]))
             return response(environ, start_response)
 
