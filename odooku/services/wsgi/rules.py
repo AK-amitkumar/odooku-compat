@@ -28,9 +28,9 @@ def build_url_regex(pattern):
     else:
         regex += result.group(1)
 
-    regex += "://"
+    regex += ":\/\/"
     pattern = pattern[len(result.group(0)):]
-    regex += "([^.]+)".join(map(re.escape, pattern.split("*")))
+    regex += "(.+)".join(map(re.escape, pattern.split("*")))
     regex += "$"
 
     return regex
@@ -48,7 +48,6 @@ class Rule(object):
 
     def match(self, environ):
         url = get_current_url(environ)
-        _logger.info("matching %s", url)
         return bool(self._match_url(url))
 
     def execute(self, environ, start_response):
@@ -57,7 +56,6 @@ class Rule(object):
             groups = self._match_url(url).groups()
             parts = urlparse(url)
             new_parts = urlparse(self._redirect.format(*groups))
-            _logger.info("redirect to %s", urlunparse(new_parts[:2] + parts[2:]))
             response = redirect(urlunparse(new_parts[:2] + parts[2:]))
             return response(environ, start_response)
 
