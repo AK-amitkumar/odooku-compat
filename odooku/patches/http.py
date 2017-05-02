@@ -40,16 +40,15 @@ class patch_root(SoftPatch):
         from odooku.backends import get_backend
         from odooku.backends.redis import RedisSessionStore
 
-        redis = get_backend('redis')
-
         @patch_class(globals()['Root'])
         class Root(object):
 
             @lazy_property
             def session_store(self):
+                redis = get_backend('redis')
                 if redis:
                     _logger.info("HTTP Sessions stored in redis")
-                    return RedisSessionStore(session_class=OpenERPSession)
+                    return RedisSessionStore(redis, session_class=OpenERPSession)
                 else:
                     path = odoo.tools.config.session_dir
                     _logger.info("HTTP sessions stored locally in: %s", path)

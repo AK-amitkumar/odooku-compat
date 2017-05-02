@@ -131,6 +131,7 @@ def main(ctx, database_url, database_maxconn, redis_url, redis_maxconn,
         maxconn=redis_maxconn
     ))
 
+
     # Setup Odoo
     import odoo
     from odoo.tools import config
