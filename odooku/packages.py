@@ -6,7 +6,7 @@ from odooku.params import params
 
 
 def init_packages():
-    for module_name in (part for part in get_envvar('PACKAGES', '').split(';') if part):
+    for module_name in (part for part in get_envvar('PACKAGES', '').split(',') if part):
         try:
             module = importlib.import_module(module_name)
         except ImportError:
