@@ -153,6 +153,8 @@ def restore(ctx, db_name, copy, s3_file):
     from odoo.api import Environment
     from odoo.service.db import restore_db
 
+    s3_backend = get_backend('s3')
+
     with tempfile.NamedTemporaryFile(delete=False) as t:
         if s3_file:
             s3_backend.client.download_fileobj(s3_backend.bucket, s3_file, t)
