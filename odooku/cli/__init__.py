@@ -169,20 +169,19 @@ def main(ctx, database_url, database_maxconn, redis_url, redis_maxconn,
     })
 
 
-
-from . import commands
-cli_commands = [
-    getattr(commands, name)
-    for name in dir(commands)
-    if isinstance(getattr(commands, name), click.BaseCommand)
-]
-
-for command in (cli_commands + list(params.cli_commands)):
-    main.add_command(command)
-
 def entrypoint():
+    from . import commands
+    cli_commands = [
+        getattr(commands, name)
+        for name in dir(commands)
+        if isinstance(getattr(commands, name), click.BaseCommand)
+    ]
+
+    for command in (cli_commands + list(params.cli_commands)):
+        main.add_command(command)
+
     main(obj={})
 
 
 if __name__ == '__main__':
-    main(obj={})
+    entrypoint()
