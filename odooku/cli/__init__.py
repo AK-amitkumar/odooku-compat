@@ -111,25 +111,27 @@ def main(ctx, database_url, database_maxconn, redis_url, redis_maxconn,
     from odooku.backends.redis import RedisBackend
 
     # Setup S3
-    register_backend('s3', S3Backend(
-        bucket=s3_bucket,
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-        aws_region=aws_region,
-        endpoint_url=s3_endpoint_url,
-        custom_domain=s3_custom_domain,
-        addressing_style=s3_addressing_style,
-    ))
+    if s3_bucket:
+        register_backend('s3', S3Backend(
+            bucket=s3_bucket,
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            aws_region=aws_region,
+            endpoint_url=s3_endpoint_url,
+            custom_domain=s3_custom_domain,
+            addressing_style=s3_addressing_style,
+        ))
 
     # Setup Redis
-    redis_url = urlparse.urlparse(redis_url) if redis_url else None
-    register_backend('redis', RedisBackend(
-        host=redis_url.hostname if redis_url else None,
-        port=redis_url.port if redis_url else None,
-        password=redis_url.password if redis_url else None,
-        db_number=redis_url.path[1:] if redis_url and redis_url.path else None,
-        maxconn=redis_maxconn
-    ))
+    if redis_url:
+        redis_url = urlparse.urlparse(redis_url)
+        register_backend('redis', RedisBackend(
+            host=redis_url.hostname,
+            port=redis_url.port,
+            password=redis_url.password,
+            db_number=redis_url.path[1:] if redis_url.path else None,
+            maxconn=redis_maxconn
+        ))
 
 
     # Setup Odoo
