@@ -11,7 +11,7 @@ class BaseFieldSerializer(object):
         raise NotImplementedError()
 
     @classmethod
-    def parse(cls, field_name, field, config):
+    def parse(cls, field_name, field, **kwargs):
         return cls(field_name, field['required'])
 
     def __repr__(self):

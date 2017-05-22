@@ -15,7 +15,8 @@ from odooku.data.exceptions import (
 
 from odooku.data.serialization.relations import (
     ManyToOneSerializer,
-    ManyToManySerializer
+    ManyToManySerializer,
+    GenericManyToOneSerializer
 )
 
 from odooku.data.ids import is_pk, is_nk, is_link
@@ -24,7 +25,8 @@ from odooku.data.match import match, match_any
 
 field_types = {
     'many2one': ManyToOneSerializer,
-    'many2many': ManyToManySerializer
+    'many2many': ManyToManySerializer,
+    'generic_many2one': GenericManyToOneSerializer
 }
 
 excluded_field_types = [
@@ -33,6 +35,7 @@ excluded_field_types = [
 
 
 _logger = logging.getLogger(__name__)
+_link = 0
 
 
 class ModelSerializer(object):
@@ -58,7 +61,7 @@ class ModelSerializer(object):
             new_id = self._serialize_id(id, context)
             if is_pk(new_id) and context.link:
                 return self._link_id(new_id, context)
-            else:
+            elif is_nk(new_id):
                 context.register_nk(self.model_name, new_id)
             return new_id
         except NaturalKeyMissing as ex:
@@ -68,7 +71,9 @@ class ModelSerializer(object):
                 raise ex
 
     def _link_id(self, id, context):
-        link = str(uuid.uuid4())
+        global _link
+        _link += 1
+        link = str(_link)
         if context.model_name != self.model_name:
             raise ModelMissing("Can not create a link for relation %s:%s, this model is not serialized" % ( self.model_name, id))
         context.map(self.model_name, link, id)
@@ -183,11 +188,14 @@ class ModelSerializer(object):
 
         for field_name, field in model.fields_get().iteritems():
             if include_field(field_name, field):
-                field_cls = field_types.get(field['type'], FieldSerializer)
+                field_config = (model_config and model_config.fields.get(field_name)) or {}
+                field_cls = field_types.get(field_config.get('type') or field['type'], FieldSerializer)
                 field_serializer = field_cls.parse(
                     field_name,
                     field,
-                    config
+                    model_name=model_name,
+                    field_config=field_config,
+                    config=config
                 )
                 if field_serializer:
                     serializer.fields[field_name] = field_serializer

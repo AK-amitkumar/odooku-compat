@@ -28,7 +28,8 @@ class DataConfig(object):
 
 class ModelConfig(object):
 
-    def __init__(self, excludes=None, includes=None, nk=None):
+    def __init__(self, excludes=None, includes=None, fields=None, nk=None):
         self.excludes = excludes or []
         self.includes = includes or []
+        self.fields = fields or {}
         self.nk = nk or []
