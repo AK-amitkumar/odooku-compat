@@ -193,16 +193,11 @@ class patch_base_sql(SoftPatch):
             and ir_model_data entries.
             """
             f = os.path.join(os.path.dirname(odooku.patches.__file__), 'base.sql')
-            if not f:
-                m = "File not found: 'base.sql' (provided by module 'base')."
-                _logger.critical(m)
-                raise IOError(m)
-            base_sql_file = odoo.tools.misc.file_open(f)
-            try:
+
+            # Do not use Odoo's file_open method
+            with open(f, 'r') as base_sql_file:
                 cr.execute(base_sql_file.read())
                 cr.commit()
-            finally:
-                base_sql_file.close()
 
             for i in odoo.modules.get_modules():
                 mod_path = odoo.modules.get_module_path(i)
