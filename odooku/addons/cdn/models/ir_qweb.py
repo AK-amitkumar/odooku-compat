@@ -11,8 +11,6 @@ from odooku.backends import get_backend
 from odooku.params import params
 
 CDN_ENABLED = getattr(params, 'CDN_ENABLED', False)
-
-
 s3_backend = get_backend('s3')
 
 
@@ -101,17 +99,7 @@ class IrQWeb(models.AbstractModel):
         return super(IrQWeb, self)._is_static_node(el) and \
                 (not cdn_att or not el.get(cdn_att))
 
-    @tools.conditional(
-        # in non-xml-debug mode we want assets to be cached forever, and the admin can force a cache clear
-        # by restarting the server after updating the source code (or using the "Clear server cache" in debug tools)
-        'xml' not in tools.config['dev_mode'],
-        tools.ormcache('xmlid', 'options.get("lang", "en_US")', 'css', 'js', 'debug', 'async'),
-    )
-    def _get_asset(self, xmlid, options, css=True, js=True, debug=False, async=False, values=None):
-        files, remains = self._get_asset_content(xmlid, options)
-        asset = AssetsBundle(xmlid, files, remains, env=self.env)
-        url_for = (values or {}).get('url_for', lambda url: url)
-        cdn_url_for = url_for
+    def _get_asset(self, xmlid, options, values=None, **kwargs):
         if CDN_ENABLED and s3_backend:
-            cdn_url_for = lambda url: self._cdn_url(url_for(url))
-        return asset.to_html(css=css, js=js, debug=debug, async=async, url_for=cdn_url_for)
+            values = dict(values, url_for=self._cdn_url)
+        return super(IrQWeb, self)._get_asset(xmlid, options, values=values, **kwargs)

@@ -6,8 +6,5 @@
   'category': 'Hidden',
   'author': 'Raymond Reggers',
   'depends': ['base', 'amazon_s3'],
-  'data': [
-
-  ],
   'auto_install': True
 }
