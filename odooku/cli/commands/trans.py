@@ -84,6 +84,32 @@ def import_(ctx, language, db_name, overwrite):
         os.unlink(t.name)
 
 
+@click.command('update')
+@click.argument('language', nargs=1)
+@click.option(
+    '--db-name',
+    callback=resolve_db_name
+)
+@click.option(
+    '--overwrite',
+    is_flag=True
+)
+@click.pass_context
+def update(ctx, language, db_name, overwrite):
+    context = {
+        'overwrite': overwrite
+    }
+
+    from odoo.modules.registry import RegistryManager
+    from odooku.api import environment
+
+    registry = RegistryManager.get(db_name)
+
+    with registry.cursor() as cr:
+        with environment(cr) as env:
+            mods = env['ir.module.module'].search([('state', '=', 'installed')])
+            mods.with_context(overwrite=overwrite).update_translations(language)
+
 
 @click.group()
 @click.pass_context
@@ -93,3 +119,4 @@ def trans(ctx):
 
 trans.add_command(export)
 trans.add_command(import_)
+trans.add_command(update)
