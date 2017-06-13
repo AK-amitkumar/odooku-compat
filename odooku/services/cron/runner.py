@@ -23,8 +23,8 @@ class CronRunner(object):
         db_names = list_dbs(True)
         if len(db_names):
             db_name = db_names[self.db_index]
-            if self._acquire_job(db_name):
-                self.db_index = (self.db_index + 1) % len(db_names)
+            self._acquire_job(db_name)
+            self.db_index = (self.db_index + 1) % len(db_names)
         else:
             self.db_index = 0
 
