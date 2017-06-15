@@ -1,6 +1,6 @@
 import click
 
-from odooku.utils.env import prefix_envvar
+from odooku.helpers.env import prefix_envvar
 
 
 __all__ = [

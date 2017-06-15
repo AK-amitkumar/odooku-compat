@@ -5,7 +5,7 @@ import gevent
 
 from werkzeug._reloader import run_with_reloader
 
-from odooku.utils.env import prefix_envvar
+from odooku.helpers.env import prefix_envvar
 
 try:
     from newrelic import agent as newrelic_agent

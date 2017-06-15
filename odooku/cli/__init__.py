@@ -3,7 +3,7 @@ import urlparse
 import importlib
 
 from odooku.params import params
-from odooku.utils.env import prefix_envvar
+from odooku.helpers.env import prefix_envvar
 from odooku.cli.resolve import resolve_addons
 
 import logging

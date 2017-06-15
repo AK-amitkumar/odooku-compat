@@ -1,7 +1,7 @@
 import os.path
 import importlib
 
-from odooku.utils.env import get_envvar
+from odooku.helpers.env import get_envvar
 from odooku.params import params
 
 
