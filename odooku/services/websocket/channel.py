@@ -24,7 +24,16 @@ class WebSocketChannel(object):
 
     def get_request(self, httprequest, payload):
         if 'path' in payload:
-            httprequest.environ['PATH_INFO'] = payload.get('path')
+            httprequest.environ.update({
+                'PATH_INFO': payload.get('path')
+            })
+
+        options = payload.get('options')
+        if options.get('debug'):
+            httprequest.environ.update({
+                'HTTP_X_DEBUG_MODE': options.get('debug')
+            })
+
         if 'rpc' in payload:
             return WebSocketRpcRequest(httprequest, payload.get('rpc'))
 

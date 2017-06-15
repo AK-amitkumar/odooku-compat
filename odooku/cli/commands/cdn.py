@@ -7,7 +7,7 @@ __all__ = [
 ]
 
 
-RESERVED = ['filestore']
+RESERVED = ['filestore', 'backup']
 
 
 @click.command()
