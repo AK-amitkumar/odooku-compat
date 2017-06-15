@@ -17,7 +17,7 @@ odoo.define('websocket.Session', function(require) {
     ws_rpc_call: function(path, params, options) {
       var data = {
         path: path,
-        options: options,
+        headers: options.headers,
         rpc: {
           jsonrpc: "2.0",
           method: "call",
@@ -43,7 +43,8 @@ odoo.define('websocket.Session', function(require) {
       var shadow = options.shadow || false;
       options.headers = _.extend({}, options.headers)
       if (odoo.debug) {
-        options.debug = $.deparam($.param.querystring()).debug;
+        var debugMode = $.deparam($.param.querystring()).debug;
+        options.headers["X-Debug-Mode"] = debugMode || "1";
       }
 
       delete options.shadow;

@@ -28,10 +28,11 @@ class WebSocketChannel(object):
                 'PATH_INFO': payload.get('path')
             })
 
-        options = payload.get('options')
-        if options.get('debug'):
+        if 'headers' in payload:
             httprequest.environ.update({
-                'HTTP_X_DEBUG_MODE': options.get('debug')
+                'HTTP_%s' % key.replace('-', '_').upper(): val
+                for key, val
+                in payload.get('headers').iteritems()
             })
 
         if 'rpc' in payload:
