@@ -16,15 +16,20 @@ def resolve_addons(ctx, param, value):
 
 
 def resolve_db_name(ctx, param, value):
+    from odoo.service.db import list_dbs
+
     config = (
         ctx.obj['config']
     )
 
     dbs = config['db_name'].split(',') if config['db_name'] else None
+    if dbs is None:
+        dbs = list_dbs(True)
+
     if value:
         if dbs is not None and value not in dbs:
             raise click.BadParameter(
-                "database '%s' is not found in explicit configuration."
+                "No such db '%s'." % value
             )
         return value
     elif dbs is not None and len(dbs) == 1:
@@ -34,3 +39,25 @@ def resolve_db_name(ctx, param, value):
     raise click.BadParameter(
         "no db name given."
     )
+
+def resolve_db_name_multiple(ctx, param, value):
+    from odoo.service.db import list_dbs
+
+    config = (
+        ctx.obj['config']
+    )
+
+    dbs = config['db_name'].split(',') if config['db_name'] else None
+    if dbs is None:
+        dbs = list_dbs(True)
+
+    if value:
+        invalid = [db for db in value if db not in dbs]
+        if invalid:
+            raise click.BadParameter(
+                "No such db '%s'." % invalid[0]
+            )
+
+        return value
+
+    return dbs

@@ -3,7 +3,7 @@ import os
 import tempfile
 import click
 
-from odooku.cli.resolve import resolve_db_name
+from odooku.cli.resolve import resolve_db_name, resolve_db_name_multiple
 
 
 __all__ = [
@@ -85,17 +85,25 @@ def import_(ctx, language, db_name, overwrite):
 
 
 @click.command('update')
-@click.argument('language', nargs=1)
 @click.option(
     '--db-name',
-    callback=resolve_db_name
+    multiple=True,
+    callback=resolve_db_name_multiple
+)
+@click.option(
+    '--module',
+    multiple=True
+)
+@click.option(
+    '--language',
+    multiple=True
 )
 @click.option(
     '--overwrite',
     is_flag=True
 )
 @click.pass_context
-def update(ctx, language, db_name, overwrite):
+def update(ctx, db_name, module, language, overwrite):
     context = {
         'overwrite': overwrite
     }
@@ -103,12 +111,17 @@ def update(ctx, language, db_name, overwrite):
     from odoo.modules.registry import RegistryManager
     from odooku.api import environment
 
-    registry = RegistryManager.get(db_name)
+    domain = [('state', '=', 'installed')]
+    if module:
+        domain = [('name', 'in', module)]
 
-    with registry.cursor() as cr:
-        with environment(cr) as env:
-            mods = env['ir.module.module'].search([('state', '=', 'installed')])
-            mods.with_context(overwrite=overwrite).update_translations(language)
+
+    for db in db_name:
+        registry = RegistryManager.get(db)
+        with registry.cursor() as cr:
+            with environment(cr) as env:
+                mods = env['ir.module.module'].search(domain)
+                mods.with_context(overwrite=overwrite).update_translations(language)
 
 
 @click.group()

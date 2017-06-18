@@ -4,7 +4,7 @@ import sys
 import os
 from contextlib import closing
 
-from odooku.cli.resolve import resolve_db_name
+from odooku.cli.resolve import resolve_db_name, resolve_db_name_multiple
 
 
 __all__ = [
@@ -49,7 +49,8 @@ def preload(ctx, db_name, module, demo_data):
 @click.command()
 @click.option(
     '--db-name',
-    callback=resolve_db_name
+    multiple=True,
+    callback=resolve_db_name_multiple
 )
 @click.option(
     '--module',
@@ -70,7 +71,8 @@ def update(ctx, db_name, module):
     }
 
     config['update'] = dict(modules)
-    registry = RegistryManager.new(db_name, update_module=True)
+    for db in db_name:
+        registry = RegistryManager.new(db, update_module=True)
 
 
 @click.command()
