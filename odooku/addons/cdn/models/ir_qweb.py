@@ -104,5 +104,5 @@ class IrQWeb(models.AbstractModel):
         # We use it to distinguish between web and pdf report asset url's.
         # hackish !!
         if CDN_ENABLED and s3_backend and not options.get('commit_assetsbundle'):
-            values = dict(values, url_for=self._cdn_url)
+            values = dict(values or {}, url_for=self._cdn_url)
         return super(IrQWeb, self)._get_asset(xmlid, options, css, js, debug, async, values)
