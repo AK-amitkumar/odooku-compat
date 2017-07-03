@@ -132,8 +132,7 @@ def dump(ctx, db_name, s3_file):
 
 @click.command()
 @click.option(
-    '--db-name',
-    callback=resolve_db_name
+    '--db-name'
 )
 @click.option(
     '--copy',
